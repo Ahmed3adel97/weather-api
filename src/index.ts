@@ -6,6 +6,8 @@ import helmet from 'helmet';
 import compression from 'compression';
 import { ENV } from './config/env.config';
 import authRoutes from './routes/auth.routes';
+import weatherRoutes from './routes/weather.routes';
+
 // Load environment variables
 dotenv.config();
 
@@ -20,6 +22,7 @@ app.use(cors());
 app.use(helmet());
 app.use(compression());
 app.use('/api/auth', authRoutes);
+app.use('/api/weather', weatherRoutes);
 
 app.get('/', (req, res) => {
   res.send('Weather API is running...');
