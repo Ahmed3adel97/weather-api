@@ -26,6 +26,7 @@ export const authMiddleware = (
     res.status(403).json({ message: 'Invalid token' });
   }
 };
+
 export const asyncHandler =
   (fn: (req: Request, res: Response, next: NextFunction) => Promise<void>) =>
   (req: Request, res: Response, next: NextFunction) => {

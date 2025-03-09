@@ -20,11 +20,10 @@ export class AuthService {
     const existingUser = await this.userRepository.findByEmail(email);
     if (existingUser) throw new Error('User already exists');
 
-    const hashedPassword = await bcrypt.hash(password, 10);
     const newUser = await this.userRepository.createUser({
       username,
       email,
-      password: hashedPassword,
+      password,
     });
 
     const token = this.generateToken(newUser);
@@ -35,10 +34,16 @@ export class AuthService {
     email: string,
     password: string
   ): Promise<{ user: UserDTO; token: string }> {
+    console.log({ email });
+
     const user = await this.userRepository.findByEmail(email);
     if (!user) throw new Error('Invalid email or password');
+    console.log({ user });
+    console.log(password, user.password);
 
     const isMatch = await bcrypt.compare(password, user.password);
+    console.log({ isMatch });
+
     if (!isMatch) throw new Error('Invalid email or password');
 
     const token = this.generateToken(user);

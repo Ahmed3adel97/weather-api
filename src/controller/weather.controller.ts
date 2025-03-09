@@ -22,8 +22,9 @@ export class WeatherController {
   ): Promise<void> {
     try {
       const { city, country, lat, lon } = req.query;
-      const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-      console.log('yayaya');
+      const ip = req.headers['x-forwarded-for']
+        ? (req.headers['x-forwarded-for'] as string).split(',')[0].trim()
+        : req.socket.remoteAddress;
 
       const weather = await weatherService.getWeather(
         city as string,

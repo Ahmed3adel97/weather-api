@@ -1,25 +1,42 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
-export interface IFavoriteCity extends Document {
-  user: mongoose.Types.ObjectId;
-  cityName: string;
+// Define Weather Summary Schema
+const WeatherSummarySchema = new Schema({
+  temperature: { type: Number, required: true },
+  humidity: { type: Number, required: true },
+  condition: { type: String, required: true },
+});
+
+// Define Favorite Document Interface
+export interface IFavoriteDocument extends Document {
+  userId: mongoose.Types.ObjectId;
+  city: string;
   country: string;
-  lat: number;
-  lon: number;
+  weather: {
+    temperature: number;
+    humidity: number;
+    condition: string;
+  };
+  _id: mongoose.Types.ObjectId;
 }
 
-const FavoriteCitySchema = new Schema<IFavoriteCity>(
+// Define Mongoose Schema
+const FavoriteSchema = new Schema<IFavoriteDocument>(
   {
-    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    cityName: { type: String, required: true },
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+    },
+    city: { type: String, required: true },
     country: { type: String, required: true },
-    lat: { type: Number, required: true },
-    lon: { type: Number, required: true },
+    weather: { type: WeatherSummarySchema, required: true }, // ✅ Embedded weather object
   },
   { timestamps: true }
 );
 
-export const FavoriteCity = mongoose.model<IFavoriteCity>(
-  'FavoriteCity',
-  FavoriteCitySchema
+// Mongoose Model
+export const FavoriteModel = mongoose.model<IFavoriteDocument>(
+  'Favorite',
+  FavoriteSchema
 );

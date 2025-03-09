@@ -33,11 +33,6 @@ export class OpenWeatherProvider implements IWeatherProvider {
       );
     }
 
-    console.log(
-      '🔍 OpenWeather API Request:',
-      `${this.API_URL}?${new URLSearchParams(params)}`
-    );
-
     try {
       const response = await axios.get(this.API_URL, { params });
       const data = response.data;

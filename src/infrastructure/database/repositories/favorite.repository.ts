@@ -1,19 +1,60 @@
-import { FavoriteCity, IFavoriteCity } from '../models/favorite.model';
+import mongoose from 'mongoose';
+import { IFavoriteRepository } from '../../../application/interfaces/favorite-repository.interface';
+import {
+  FavoriteEntity,
+  WeatherSummary,
+} from '../../../domain/entities/favorite.entity';
+import { FavoriteModel, IFavoriteDocument } from '../models/favorite.model';
 
-export class FavoriteRepository {
-  async addFavorite(
+export class FavoriteRepository implements IFavoriteRepository {
+  private toEntity(favDoc: IFavoriteDocument): FavoriteEntity {
+    return new FavoriteEntity(
+      favDoc.userId.toString(),
+      favDoc.city,
+      favDoc.country,
+      new WeatherSummary(
+        favDoc.weather.temperature,
+        favDoc.weather.humidity,
+        favDoc.weather.condition
+      )
+    );
+  }
+
+  async addOrUpdateFavorite(favorite: FavoriteEntity): Promise<void> {
+    await FavoriteModel.findOneAndUpdate(
+      {
+        userId: new mongoose.Types.ObjectId(favorite.userId),
+        city: favorite.city,
+        country: favorite.country,
+      },
+      {
+        $set: {
+          weather: {
+            temperature: favorite.weather.temperature,
+            humidity: favorite.weather.humidity,
+            condition: favorite.weather.condition,
+          },
+        },
+      },
+      { upsert: true, new: true }
+    );
+  }
+
+  async getFavorites(userId: string): Promise<FavoriteEntity[]> {
+    const favorites = await FavoriteModel.find({
+      userId: new mongoose.Types.ObjectId(userId),
+    });
+    return favorites.map(this.toEntity);
+  }
+  async removeFavorite(
     userId: string,
-    cityData: Partial<IFavoriteCity>
-  ): Promise<IFavoriteCity> {
-    const favorite = new FavoriteCity({ ...cityData, user: userId });
-    return await favorite.save();
-  }
-
-  async getFavoritesByUser(userId: string): Promise<IFavoriteCity[]> {
-    return await FavoriteCity.find({ user: userId });
-  }
-
-  async removeFavorite(userId: string, cityId: string): Promise<void> {
-    await FavoriteCity.findOneAndDelete({ _id: cityId, user: userId });
+    city: string,
+    country: string
+  ): Promise<void> {
+    await FavoriteModel.deleteOne({
+      userId: new mongoose.Types.ObjectId(userId),
+      city,
+      country,
+    });
   }
 }

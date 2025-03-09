@@ -2,7 +2,7 @@ import { IWeatherProvider } from '../interfaces/weather-provider.interface';
 import { RedisCache } from '../../infrastructure/cache/redis.cache';
 import { IpLocationProvider } from '../../infrastructure/providers/ip-location.provider';
 import { WeatherDTO } from '../dto/weather.dto';
-import { CryptoService } from '../../infrastructure/security/crypto.service';
+import { WeatherEntity } from '../../domain/entities/weather.entity';
 
 export class WeatherService {
   constructor(
@@ -17,33 +17,38 @@ export class WeatherService {
     lat?: number,
     lon?: number,
     ip?: string
-  ): Promise<string> {
-    console.log('sisis');
-    console.log({ city, country, lat, lon, ip });
+  ): Promise<WeatherEntity> {
+    console.log({ city, ip });
 
     if (!lat || !lon) {
       if (ip) {
         try {
           const location = await this.ipLocationProvider.getLocation(ip);
-          console.log(location);
-
           lat = location.lat;
           lon = location.lon;
         } catch (err) {
           console.log(err);
           throw err;
         }
-      } else {
-        throw new Error('Location data missing.');
+      }
+
+      if (!lat || !lon) {
+        if (!city || !country) {
+          throw new Error(
+            'Location data missing. Provide lat/lon, city/country, or IP.'
+          );
+        }
       }
     }
-    console.log('kamama');
-
-    const cacheKey = `weather:${lat},${lon}`;
+    const cacheKey =
+      city && country
+        ? `weather:${city.toLowerCase()},${country.toUpperCase()}`
+        : `weather:${lat},${lon}`;
     const cachedWeather = await this.cache.get(cacheKey);
 
     if (cachedWeather) {
-      return CryptoService.encrypt(JSON.parse(cachedWeather));
+      // return CryptoService.encrypt(JSON.parse(cachedWeather));
+      return JSON.parse(cachedWeather);
     }
 
     const weatherData = await this.weatherProvider.getWeather(
@@ -53,8 +58,9 @@ export class WeatherService {
       lon
     );
 
-    await this.cache.set(cacheKey, JSON.stringify(weatherData));
+    // await this.cache.set(cacheKey, JSON.stringify(weatherData));
 
-    return CryptoService.encrypt(WeatherDTO.fromEntity(weatherData));
+    // return CryptoService.encrypt(WeatherDTO.fromEntity(weatherData));
+    return weatherData;
   }
 }
