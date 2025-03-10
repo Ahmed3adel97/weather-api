@@ -16,7 +16,38 @@ const weatherService = new WeatherService(
 );
 const favoriteService = new FavoriteService(favoriteRepository, weatherService);
 
+/**
+ * @swagger
+ * tags:
+ *   name: Favorites
+ *   description: Manage user favorite cities
+ */
 export class FavoriteController {
+  /**
+   * @swagger
+   * /favorites:
+   *   post:
+   *     summary: Add or update a favorite city
+   *     tags: [Favorites]
+   *     security:
+   *       - bearerAuth: []
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             properties:
+   *               city:
+   *                 type: string
+   *                 example: "Paris"
+   *               country:
+   *                 type: string
+   *                 example: "FR"
+   *     responses:
+   *       201:
+   *         description: Favorite added successfully
+   */
   async addFavorite(
     req: AuthenticatedRequest,
     res: Response,
@@ -28,8 +59,6 @@ export class FavoriteController {
         return;
       }
       const userId = req.user.id;
-      console.log({ userId });
-
       const { city, country } = req.body;
 
       await favoriteService.addOrUpdateFavorite(userId, city, country);
@@ -38,29 +67,27 @@ export class FavoriteController {
       next(error);
     }
   }
-  async getProfile(
-    req: AuthenticatedRequest,
-    res: Response,
-    next: NextFunction
-  ): Promise<void> {
-    try {
-      if (!req.user) {
-        res.status(401).json({ message: 'Unauthorized' });
-        return;
-      }
-      const city = '';
-      const country = '';
-      const userId = req.user.id;
-      const user = await favoriteService.addOrUpdateFavorite(
-        userId,
-        city,
-        country
-      );
-      res.status(200).json({ user });
-    } catch (error) {
-      next(error);
-    }
-  }
+
+  /**
+   * @swagger
+   * /favorites:
+   *   get:
+   *     summary: Get all favorite cities for the logged-in user
+   *     tags: [Favorites]
+   *     security:
+   *       - bearerAuth: []
+   *     responses:
+   *       200:
+   *         description: List of favorite cities (encrypted)
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 favorites:
+   *                   type: string
+   *                   description: Encrypted list of favorite cities
+   */
   async getFavorites(
     req: AuthenticatedRequest,
     res: Response,
@@ -81,6 +108,34 @@ export class FavoriteController {
       next(error);
     }
   }
+
+  /**
+   * @swagger
+   * /favorites/{city}/{country}:
+   *   delete:
+   *     summary: Remove a favorite city
+   *     tags: [Favorites]
+   *     security:
+   *       - bearerAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: city
+   *         required: true
+   *         schema:
+   *           type: string
+   *         example: "Paris"
+   *         description: City name
+   *       - in: path
+   *         name: country
+   *         required: true
+   *         schema:
+   *           type: string
+   *         example: "FR"
+   *         description: Country code (ISO 3166-1)
+   *     responses:
+   *       200:
+   *         description: Favorite removed successfully
+   */
   async removeFavorite(
     req: AuthenticatedRequest,
     res: Response,
@@ -96,7 +151,6 @@ export class FavoriteController {
 
       await favoriteService.removeFavorite(userId, city, country);
       res.status(200).json({ message: 'Favorite removed successfully' });
-      next();
     } catch (error) {
       next(error);
     }
