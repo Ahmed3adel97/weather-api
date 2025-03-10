@@ -8,30 +8,37 @@ import { ENV } from './config/env.config';
 import { setupSwagger } from './infrastructure/swagger/swagger.config';
 import authRoutes from './routes/auth.routes';
 import weatherRoutes from './routes/weather.routes';
-import favouriteRoutes from './routes/favorite.routes';
+import favoriteRoutes from './routes/favorite.routes';
 
-// Load environment variables
+// ✅ Load environment variables
 dotenv.config();
 
-// Connect to MongoDB
-connectDB();
-
+// ✅ Create Express App
 const app = express();
-const PORT = process.env.PORT || 3000;
+
+// ✅ Apply Middleware
 app.use(express.json());
-setupSwagger(app);
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 app.use(helmet());
 app.use(compression());
+
+setupSwagger(app);
+
 app.use('/api/auth', authRoutes);
 app.use('/api/weather', weatherRoutes);
-app.use('/api/favorites', favouriteRoutes);
+app.use('/api/favorites', favoriteRoutes);
 
 app.get('/', (req, res) => {
-  res.send('Weather API is running...');
+  res.send(' Weather API is running...');
 });
 
-app.listen(PORT, () => {
-  console.log(`🚀 Server is running on port ${PORT}`);
-});
+if (process.env.NODE_ENV !== 'test') {
+  connectDB();
+  const PORT = process.env.PORT || 3000;
+  app.listen(PORT, () => {
+    console.log(`🚀 Server is running on port ${PORT}`);
+  });
+}
+
+export default app;

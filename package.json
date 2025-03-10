@@ -4,9 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "npx tsc && nodemon --exec ts-node src/index.ts",
-    "build": "tsc"
+    "build": "tsc",
+    "test": "jest --coverage",
+    "test:watch": "jest --watch"
   },
   "keywords": [],
   "author": "",
@@ -35,6 +36,7 @@
     "@types/mongoose": "^5.11.97",
     "@types/node": "^22.13.9",
     "@types/redis": "^4.0.11",
+    "@types/supertest": "^6.0.2",
     "@types/swagger-jsdoc": "^6.0.4",
     "@types/swagger-ui-express": "^4.1.8",
     "eslint": "^9.21.0",
@@ -42,6 +44,7 @@
     "nodemon": "^3.1.9",
     "prettier": "^3.5.3",
     "supertest": "^7.0.0",
+    "ts-jest": "^29.2.6",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.2"
   }
